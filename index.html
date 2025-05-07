@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Piano</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .piano {
+            display: flex;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .key {
+            width: 60px;
+            height: 200px;
+            background-color: #fff;
+            border: 1px solid #000;
+            border-radius: 0 0 5px 5px;
+            margin: 0 2px;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s ease-in-out;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            user-select: none; /* Prevent text selection */
+        }
+
+        .key:active {
+            transform: scale(0.95);
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .key.black {
+            width: 40px;
+            height: 120px;
+            background-color: #000;
+            color: #fff;
+            position: absolute;
+            top: 0;
+            left: -20px; /* Adjust based on white key width */
+            z-index: 1;
+            border-radius: 0 0 5px 5px;
+            margin: 0;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .key.black:active {
+             transform: scale(0.95);
+             box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Positioning for black keys */
+        .key:nth-child(2) .black { left: 40px; } /* C# */
+        .key:nth-child(3) .black { left: 100px; } /* D# */
+        .key:nth-child(5) .black { left: 220px; } /* F# */
+        .key:nth-child(6) .black { left: 280px; } /* G# */
+        .key:nth-child(7) .black { left: 340px; } /* A# */
+
+
+    </style>
+</head>
+<body>
+
+    <div class="piano">
+        <div class="key" data-note="C4">C</div>
+        <div class="key" data-note="D4">D<div class="key black" data-note="C#4">C#</div></div>
+        <div class="key" data-note="E4">E<div class="key black" data-note="D#4">D#</div></div>
+        <div class="key" data-note="F4">F</div>
+        <div class="key" data-note="G4">G<div class="key black" data-note="F#4">F#</div></div>
+        <div class="key" data-note="A4">A<div class="key black" data-note="G#4">G#</div></div>
+        <div class="key" data-note="B4">B<div class="key black" data-note="A#4">A#</div></div>
+        <div class="key" data-note="C5">C</div>
+    </div>
+
+    <script>
+        // Create an AudioContext
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Function to play a note
+        function playNote(frequency, duration = 0.5) {
+            // Create an oscillator node (generates the tone)
+            const oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine'; // sine, square, sawtooth, triangle
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime); // Set the frequency
+
+            // Create a gain node (controls the volume)
+            const gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(1, audioContext.currentTime); // Start at full volume
+
+            // Connect the oscillator to the gain node, and the gain node to the audio context's destination (speakers)
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            // Start the oscillator
+            oscillator.start();
+
+            // Stop the oscillator after a duration
+            // Use the AudioParam's exponentialRampToValueAtTime for a smoother fade out
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        // Map notes to frequencies (in Hz)
+        // These are approximate frequencies for a standard tuning
+        const noteFrequencies = {
+            'C4': 261.63,
+            'C#4': 277.18,
+            'D4': 293.66,
+            'D#4': 311.13,
+            'E4': 329.63,
+            'F4': 349.23,
+            'F#4': 369.99,
+            'G4': 392.00,
+            'G#4': 415.30,
+            'A4': 440.00,
+            'A#4': 466.16,
+            'B4': 493.88,
+            'C5': 523.25
+        };
+
+        // Get all the keys
+        const keys = document.querySelectorAll('.key');
+
+        // Add click event listener to each key
+        keys.forEach(key => {
+            key.addEventListener('click', () => {
+                const note = key.dataset.note;
+                if (noteFrequencies[note]) {
+                    playNote(noteFrequencies[note]);
+                }
+            });
+        });
+
+    </script>
+
+</body>
+</html>
